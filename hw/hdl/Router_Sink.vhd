@@ -28,7 +28,7 @@ use IEEE.std_logic_unsigned.all;
 entity Router_Sink is
 Port ( 
 	clock   : in  std_logic;
-	reset   : in  std_logic;  
+	reset_n  : in  std_logic;  
 	-- connected to the zedboard
 	led_o   : out std_logic;
 	-- axi slave streaming interface
@@ -71,29 +71,31 @@ signal led_r : std_logic;
 
 begin
 
-    process(clock, reset)
+    process(clock)
     begin
-        if (reset = '1') then 
-            state <= IDLE;
-            led_cnt <= (others => '0');
-            led_r <= '0';
-        elsif (clock'event and clock = '0') then
-            case state is
-                when IDLE =>
-                    led_r <= '0';
-                    led_cnt <= (others => '0');
-                    if valid_i = '1' then
-                        state <= TURN_LED_ON;
-                    end if; 
-                when TURN_LED_ON =>
-                        led_r <= '1';
-                        if led_cnt < 100000000 then -- assuming 100MHz, this will cause a 1s delay
-                        --if led_cnt < 100 then -- use this line for simulation
-                            led_cnt <= led_cnt + 1;
-                        else
-                            state <= IDLE;
-                        end if;            
-            end case;
+        if (clock'event and clock = '0') then
+            if (reset_n = '0') then 
+                state <= IDLE;
+                led_cnt <= (others => '0');
+                led_r <= '0';
+            else
+                case state is
+                    when IDLE =>
+                        led_r <= '0';
+                        led_cnt <= (others => '0');
+                        if valid_i = '1' then
+                            state <= TURN_LED_ON;
+                        end if; 
+                    when TURN_LED_ON =>
+                            led_r <= '1';
+                            if led_cnt < 100000000 then -- assuming 100MHz, this will cause a 1s delay
+                            --if led_cnt < 100 then -- use this line for simulation
+                                led_cnt <= led_cnt + 1;
+                            else
+                                state <= IDLE;
+                            end if;            
+                end case;
+                end if;
         end if; 
 	end process;
 
