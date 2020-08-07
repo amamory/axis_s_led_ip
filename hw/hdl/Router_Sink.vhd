@@ -73,7 +73,7 @@ begin
 
     process(clock)
     begin
-        if (clock'event and clock = '0') then
+        if (clock'event and clock = '1') then
             if (reset_n = '0') then 
                 state <= IDLE;
                 led_cnt <= (others => '0');
